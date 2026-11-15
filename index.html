@@ -51,7 +51,11 @@ h2{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:800;letter-spacing:-.01em;marg
 .card small{opacity:.75}
 .card h3{font-size:1.05rem}
 .price{font-weight:800;font-size:1.2rem}
-.tone{padding:8px;border:1.5px solid var(--pink);border-radius:10px;font:inherit;color:var(--brown);background:#fff}
+.tones{display:flex;flex-wrap:wrap;gap:6px}
+.tn{border:1.5px solid var(--pink);background:#fff;color:var(--brown);border-radius:99px;padding:5px 12px;font:inherit;font-size:.85rem;cursor:pointer}
+.tn:hover{background:var(--blush)}
+.tn[aria-pressed=true]{background:var(--brown);border-color:var(--brown);color:var(--cream)}
+.warn{display:none;font-size:.85rem;font-weight:700}
 details{font-size:.92rem}summary{cursor:pointer;font-weight:700}
 .card .btn{margin-top:auto;width:100%;text-align:center}
 .empty{padding:40px;text-align:center;background:var(--cream);border-radius:18px}
@@ -172,7 +176,7 @@ function drawGrid(){
     <div class="b"><small>${esc(p.category)}</small><h3>${esc(p.name)}</h3>
     <p>${esc(p.desc)}</p>
     ${p.tips?`<details><summary>Tips de uso</summary><p>${esc(p.tips)}</p></details>`:""}
-    ${p.tones&&p.tones.length?`<select class="tone" aria-label="Elige tu tono">${p.tones.map(t=>`<option>${esc(t)}</option>`).join("")}</select>`:""}
+    ${p.tones&&p.tones.length?`<b style="font-size:.9rem">Elige tu tono</b><div class="tones" role="group" aria-label="Tonos disponibles">${p.tones.map(t=>`<button type="button" class="tn" data-t="${esc(t)}" aria-pressed="false">${esc(t)}</button>`).join("")}</div><span class="warn" role="alert">Selecciona un tono para agregarlo.</span>`:""}
     <div class="price">${cop(p.price)}</div>
     <button class="btn" data-add="${p.id}">Agregar al carrito</button></div></article>`).join(""):
     `<div class="empty" style="grid-column:1/-1"><b>Estamos preparando el catálogo.</b><br>Escríbenos por WhatsApp y te contamos qué tenemos disponible.</div>`;
@@ -194,7 +198,10 @@ const toggle=o=>{$("#drawer").classList.toggle("open",o);$("#veil").classList.to
 document.addEventListener("click",e=>{
   const t=e.target;
   if(t.dataset.c){cat=t.dataset.c;drawCats();drawGrid()}
-  if(t.dataset.add){const sl=t.closest(".card").querySelector(".tone"),k=t.dataset.add+(sl?"|"+sl.value:"");cart[k]=(cart[k]||0)+1;drawCart();toggle(true)}
+  if(t.dataset.t!==undefined){const cd=t.closest(".card");cd.querySelectorAll(".tn").forEach(b=>b.setAttribute("aria-pressed",b===t));cd.querySelector(".warn").style.display="none"}
+  if(t.dataset.add){const cd=t.closest(".card"),has=cd.querySelector(".tn"),sl=cd.querySelector(".tn[aria-pressed=true]");
+    if(has&&!sl){cd.querySelector(".warn").style.display="block";return}
+    const k=t.dataset.add+(sl?"|"+sl.dataset.t:"");cart[k]=(cart[k]||0)+1;drawCart();toggle(true)}
   if(t.dataset.p){cart[t.dataset.p]++;drawCart()}
   if(t.dataset.m){if(--cart[t.dataset.m]<1)delete cart[t.dataset.m];drawCart()}
   if(t.dataset.r){delete cart[t.dataset.r];drawCart()}
