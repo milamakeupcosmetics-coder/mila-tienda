@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Panel MILA.</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:Garet;src:url(fonts/Garet-Book.woff2) format("woff2");font-weight:400}
+@font-face{font-family:Garet;src:url(fonts/Garet-Heavy.woff2) format("woff2");font-weight:800}
+:root{--blush:#f6d8d6;--brown:#604734;--cream:#fcf7d9;--pink:#f0c5d4}
+*{box-sizing:border-box;margin:0}
+body{font-family:Garet,Montserrat,sans-serif;background:var(--cream);color:var(--brown);padding:24px 16px}
+.box{max-width:760px;margin:auto}
+h1{font-weight:800;margin-bottom:16px}
+.panel{background:#fff;border-radius:18px;padding:22px;margin-bottom:20px}
+label{display:block;font-weight:700;margin:12px 0 4px}
+input,textarea,select{width:100%;padding:10px 12px;border:1.5px solid var(--pink);border-radius:10px;font:inherit;color:var(--brown);background:#fff}
+textarea{min-height:70px}
+.btn{background:var(--brown);color:var(--cream);border:0;border-radius:99px;padding:11px 24px;font:inherit;font-weight:700;cursor:pointer;margin-top:16px}
+.btn.s{background:var(--pink);color:var(--brown);margin:0 6px 0 0;padding:6px 14px}
+.row{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--blush)}
+.row img,.row i{width:54px;height:54px;border-radius:10px;object-fit:cover;background:var(--blush)}
+.row div{flex:1}
+#msg{margin-top:10px;font-weight:700}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>Panel MILA.</h1>
+
+<div class="panel" id="login">
+  <b>Ingresa para administrar tus productos</b>
+  <label for="u">Usuario</label><input id="u" autocomplete="username">
+  <label for="p">Contraseña</label><input id="p" type="password" autocomplete="current-password">
+  <button class="btn" id="go">Ingresar</button>
+  <div id="lmsg"></div>
+</div>
+
+<div id="app" class="hide">
+  <div class="panel">
+    <b id="ftitle">Agregar producto</b>
+    <label for="n">Nombre</label><input id="n">
+    <label for="pr">Precio (COP)</label><input id="pr" inputmode="numeric" placeholder="55.000">
+    <label for="c">Categoría</label><input id="c" list="cl" placeholder="Labiales, Cuidado de la piel…"><datalist id="cl"></datalist>
+    <label for="d">Descripción corta</label><textarea id="d"></textarea>
+    <label for="t">Tips de uso o ingredientes (opcional)</label><textarea id="t"></textarea>
+    <label for="f">Foto</label><input id="f" type="file" accept="image/*">
+    <button class="btn" id="save">Guardar producto</button>
+    <button class="btn s" id="cancel" style="margin-top:16px">Cancelar edición</button>
+    <div id="msg"></div>
+  </div>
+  <div class="panel"><b>Tus productos</b><div id="list"></div></div>
+  <a href="/" style="color:var(--brown)">Ver la tienda</a>
+</div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dots=v=>v.replace(/\D/g,"").replace(/^0+(?=\d)/,"").replace(/\B(?=(\d{3})+(?!\d))/g,".");
+const cop=n=>"$ "+dots(String(n));
+let auth=null,products=[],editing=null,img="";
+
+$("#pr").oninput=e=>e.target.value=dots(e.target.value);
+
+async function api(body){
+  const r=await fetch("/api/products",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...auth,...body})});
+  return r;
+}
+$("#go").onclick=async()=>{
+  auth={user:$("#u").value.trim(),pass:$("#p").value};
+  const r=await api({});
+  if(!r.ok){$("#lmsg").textContent="Usuario o contraseña incorrectos.";return}
+  products=await (await fetch("/api/products",{cache:"no-store"})).json();
+  $("#login").classList.add("hide");$("#app").classList.remove("hide");draw();
+};
+function draw(){
+  $("#list").innerHTML=products.length?products.map(p=>`<div class="row">${p.img?`<img src="${p.img}" alt="">`:"<i></i>"}<div><b>${esc(p.name)}</b><br>${cop(p.price)} · ${esc(p.category)}</div><button class="btn s" data-e="${p.id}">Editar</button><button class="btn s" data-x="${p.id}">Eliminar</button></div>`).join(""):"<p style='margin-top:10px'>Aún no hay productos. Agrega el primero arriba.</p>";
+  $("#cl").innerHTML=[...new Set(products.map(p=>p.category).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join("");
+}
+async function persist(ok){
+  const r=await api({products});
+  $("#msg").textContent=r.ok?ok:"No se pudo guardar. Intenta de nuevo.";
+  return r.ok;
+}
+function reset(){editing=null;img="";["n","pr","c","d","t","f"].forEach(i=>$("#"+i).value="");$("#ftitle").textContent="Agregar producto"}
+$("#cancel").onclick=reset;
+$("#f").onchange=e=>{
+  const file=e.target.files[0];if(!file)return;
+  const im=new Image();im.onload=()=>{
+    const s=Math.min(1,700/Math.max(im.width,im.height)),cv=document.createElement("canvas");
+    cv.width=im.width*s;cv.height=im.height*s;cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+    img=cv.toDataURL("image/jpeg",.8)};
+  im.src=URL.createObjectURL(file);
+};
+$("#save").onclick=async()=>{
+  const price=parseInt($("#pr").value.replace(/\./g,""),10);
+  if(!$("#n").value.trim()||!price){$("#msg").textContent="Escribe el nombre y el precio.";return}
+  const old=products.find(p=>p.id===editing);
+  const p={id:editing||Date.now().toString(36),name:$("#n").value.trim(),price,category:$("#c").value.trim()||"General",desc:$("#d").value.trim(),tips:$("#t").value.trim(),img:img||old?.img||""};
+  products=editing?products.map(x=>x.id===editing?p:x):[...products,p];
+  if(await persist("Producto guardado.")){reset();draw()}
+};
+$("#list").onclick=async e=>{
+  const x=e.target.dataset.x,ed=e.target.dataset.e;
+  if(x&&confirm("¿Eliminar este producto?")){products=products.filter(p=>p.id!==x);if(await persist("Producto eliminado."))draw()}
+  if(ed){const p=products.find(p=>p.id===ed);editing=ed;img="";
+    $("#n").value=p.name;$("#pr").value=dots(String(p.price));$("#c").value=p.category;$("#d").value=p.desc;$("#t").value=p.tips||"";
+    $("#ftitle").textContent="Editando: "+p.name;scrollTo({top:0,behavior:"smooth"})}
+};
+</script>
+</body>
+</html>

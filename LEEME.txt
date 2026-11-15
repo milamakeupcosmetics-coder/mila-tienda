@@ -1,0 +1,5 @@
+MILA. - Pasos para publicar en Netlify
+1) Sube esta carpeta a un repositorio de GitHub (o usa Netlify CLI) y conéctalo en Netlify. No necesita comando de build; carpeta de publicación: . (raíz).
+2) En Netlify: Site configuration > Environment variables, crea ADMIN_USER y ADMIN_PASS (tu usuario y contraseña del panel).
+3) Vuelve a desplegar. Entra a tusitio.netlify.app/admin.html para agregar productos.
+4) Opcional: pon Garet-Book.woff2 y Garet-Heavy.woff2 en la carpeta fonts/ para usar tu tipografía exacta (mientras tanto se usa Montserrat).

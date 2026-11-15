@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MILA. Cosméticos y cuidado de la piel · Cúcuta</title>
+<meta name="description" content="Catálogo de MILA. Cosméticos y cuidado de la piel en Cúcuta. Arma tu pedido y confírmalo por WhatsApp.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:Garet;src:url(fonts/Garet-Book.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Garet;src:url(fonts/Garet-Heavy.woff2) format("woff2");font-weight:800;font-display:swap}
+:root{--blush:#f6d8d6;--brown:#604734;--cream:#fcf7d9;--pink:#f0c5d4;--f:Garet,Montserrat,system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{font-family:var(--f);color:var(--brown);background:var(--cream);line-height:1.6}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--brown);outline-offset:2px}
+.wrap{max-width:1100px;margin:auto;padding:0 20px}
+header{position:sticky;top:0;z-index:20;background:var(--cream);border-bottom:1px solid var(--pink)}
+header .wrap{display:flex;align-items:center;gap:20px;height:64px}
+header img{height:34px}
+nav{margin-left:auto;display:flex;gap:22px;font-size:.95rem}
+nav a{text-decoration:none}nav a:hover{text-decoration:underline}
+.cartbtn{background:var(--brown);color:var(--cream);border:0;border-radius:99px;padding:8px 18px;font:inherit;font-weight:700;cursor:pointer}
+@media(max-width:700px){nav{display:none}.cartbtn{margin-left:auto}}
+.hero{background:#fff}
+.hero .wrap{display:grid;grid-template-columns:1fr 1.2fr;gap:30px;align-items:center;padding-top:40px;padding-bottom:40px}
+.hero h1{font-size:clamp(2.4rem,6vw,4.2rem);font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.hero p{margin:16px 0 26px;max-width:36ch;font-size:1.1rem}
+.hero img{width:100%;display:block}
+.btn{display:inline-block;background:var(--pink);color:var(--brown);border:0;border-radius:99px;padding:12px 26px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer}
+.btn:hover{background:var(--blush)}
+@media(max-width:760px){.hero .wrap{grid-template-columns:1fr}}
+section{padding:64px 0}
+h2{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:800;letter-spacing:-.01em;margin-bottom:8px}
+.sub{max-width:60ch;margin-bottom:28px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;list-style:none;padding:0;counter-reset:s}
+.steps li{counter-increment:s;background:var(--blush);border-radius:16px;padding:18px}
+.steps li:before{content:counter(s);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--brown);color:var(--cream);font-weight:800;margin-bottom:10px}
+@media(max-width:800px){.steps{grid-template-columns:1fr 1fr}}
+#catalogo{background:#fff}
+.cats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.cats button{border:1.5px solid var(--brown);background:none;color:var(--brown);border-radius:99px;padding:6px 16px;font:inherit;cursor:pointer}
+.cats button[aria-pressed=true]{background:var(--brown);color:var(--cream)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px}
+.card{background:var(--cream);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.card .ph{aspect-ratio:1;background:var(--blush);display:grid;place-items:center}
+.card .ph img{width:100%;height:100%;object-fit:cover}
+.card .b{padding:16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card small{opacity:.75}
+.card h3{font-size:1.05rem}
+.price{font-weight:800;font-size:1.2rem}
+details{font-size:.92rem}summary{cursor:pointer;font-weight:700}
+.card .btn{margin-top:auto;width:100%;text-align:center}
+.empty{padding:40px;text-align:center;background:var(--cream);border-radius:18px}
+.faq details{background:var(--blush);border-radius:14px;padding:14px 18px;margin-bottom:10px}
+.faq p{margin-top:8px}
+.contact{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.contact div{background:var(--blush);border-radius:16px;padding:22px}
+.contact h3{margin-bottom:6px}
+footer{background:var(--brown);color:var(--cream);text-align:center;padding:28px 20px}
+footer img{height:30px;filter:brightness(0) invert(1);opacity:.9;margin-bottom:8px}
+#drawer{position:fixed;inset:0 0 0 auto;width:min(420px,100%);background:#fff;z-index:40;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(96,71,52,.2)}
+#drawer.open{transform:none}
+#drawer header{position:static;padding:0}
+#drawer .hd{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--pink)}
+#items{flex:1;overflow:auto;padding:12px 20px}
+.it{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--blush)}
+.it img,.it i{width:56px;height:56px;border-radius:10px;object-fit:cover;background:var(--blush)}
+.qty{display:flex;align-items:center;gap:8px;margin-top:4px}
+.qty button{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--brown);background:none;color:var(--brown);cursor:pointer;font:inherit}
+.rm{background:none;border:0;color:var(--brown);cursor:pointer;text-decoration:underline;font:inherit;font-size:.85rem}
+#drawer .ft{padding:16px 20px;border-top:1px solid var(--pink)}
+.tot{display:flex;justify-content:space-between;font-weight:800;font-size:1.2rem;margin-bottom:12px}
+.ft .btn{width:100%;text-align:center;background:var(--brown);color:var(--cream)}
+#veil{position:fixed;inset:0;background:rgba(96,71,52,.4);z-index:30;display:none}
+#veil.open{display:block}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a href="#inicio"><img src="img/logo.png" alt="MILA."></a>
+  <nav><a href="#como-pedir">Cómo pedir</a><a href="#catalogo">Catálogo</a><a href="#preguntas">Preguntas</a><a href="#contacto">Contacto</a></nav>
+  <button class="cartbtn" id="open">Carrito (<span id="cnt">0</span>)</button>
+</div></header>
+
+<main id="inicio">
+<div class="hero"><div class="wrap">
+  <div>
+    <h1>Let’s glow, girls</h1>
+    <p>Cosméticos y cuidado de la piel, elegidos para ti. Arma tu pedido y lo confirmamos por WhatsApp.</p>
+    <a class="btn" href="#catalogo">Ver catálogo</a>
+  </div>
+  <img src="img/portada.jpg" alt="Productos de cuidado facial en tonos rosados">
+</div></div>
+
+<section id="como-pedir"><div class="wrap">
+  <h2>Pedir en MILA. es fácil</h2>
+  <p class="sub">Tu compra se confirma por WhatsApp, con atención personalizada.</p>
+  <ol class="steps">
+    <li><b>Explora</b><br>Mira el catálogo y filtra por categoría.</li>
+    <li><b>Agrega al carrito</b><br>Elige tus favoritos y las cantidades.</li>
+    <li><b>Envía tu pedido</b><br>Pulsa “Pedir por WhatsApp” y se abre el chat con tu lista lista.</li>
+    <li><b>Confirma con nosotras</b><br>Coordinamos pago y entrega contigo.</li>
+  </ol>
+</div></section>
+
+<section id="catalogo"><div class="wrap">
+  <h2>Catálogo</h2>
+  <p class="sub">Toca “Tips de uso” en cada producto para ver cómo sacarle el máximo provecho.</p>
+  <div class="cats" id="cats"></div>
+  <div class="grid" id="grid"></div>
+</div></section>
+
+<section id="preguntas"><div class="wrap faq">
+  <h2>Preguntas frecuentes</h2>
+  <p class="sub">Lo que más nos preguntan antes de comprar.</p>
+  <details><summary>¿Cómo hago mi pedido?</summary><p>Agrega tus productos al carrito y pulsa “Pedir por WhatsApp”. Te llegará a nuestro chat con el detalle y el total, y desde ahí lo confirmamos.</p></details>
+  <details><summary>¿Cómo pago y cuánto cuesta el envío?</summary><p>Lo coordinamos por WhatsApp al confirmar tu pedido, según tu ubicación.</p></details>
+  <details><summary>¿Hacen envíos fuera de Cúcuta?</summary><p>Escríbenos por WhatsApp con tu ciudad y te confirmamos la disponibilidad.</p></details>
+  <details><summary>¿Qué precio tienen los productos?</summary><p>Todos los precios están en pesos colombianos (COP).</p></details>
+  <details><summary>¿Cuál es el horario de atención?</summary><p>Lunes a viernes en jornada continua y sábados hasta las 12 p. m.</p></details>
+  <details><summary>¿Cómo sé cuál producto es para mi piel?</summary><p>Cada producto trae sus tips de uso. Si tienes dudas, escríbenos y te orientamos.</p></details>
+</div></section>
+
+<section id="contacto" style="background:#fff"><div class="wrap">
+  <h2>Contáctanos</h2>
+  <p class="sub">Estamos en Cúcuta, Norte de Santander. Escríbenos y te respondemos.</p>
+  <div class="contact">
+    <div><h3>WhatsApp</h3><p>+57 311 549 7110</p><br><a class="btn" href="https://wa.me/573115497110?text=Hola%20MILA.%20Quiero%20informaci%C3%B3n" target="_blank" rel="noopener">Escribir ahora</a></div>
+    <div><h3>Instagram</h3><p>@mila.beautycosmetics</p><br><a class="btn" href="https://www.instagram.com/mila.beautycosmetics" target="_blank" rel="noopener">Ver perfil</a></div>
+    <div><h3>Horario</h3><p>Lunes a viernes, jornada continua.<br>Sábados hasta las 12 p. m.</p><p>Cúcuta, Colombia</p></div>
+  </div>
+</div></section>
+</main>
+
+<footer><img src="img/logo.png" alt="MILA."><br>Let’s glow, girls · Cúcuta, Colombia</footer>
+
+<div id="veil"></div>
+<aside id="drawer" aria-label="Carrito de compras">
+  <div class="hd"><b style="font-size:1.2rem">Tu carrito</b><button class="rm" id="close">Cerrar</button></div>
+  <div id="items"></div>
+  <div class="ft"><div class="tot"><span>Total</span><span id="total">$ 0</span></div><a class="btn" id="wa" href="#" target="_blank" rel="noopener">Pedir por WhatsApp</a></div>
+</aside>
+
+<script>
+const WA="573115497110";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const cop=n=>"$ "+String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,".");
+let products=[],cart={},cat="Todos";
+try{cart=JSON.parse(localStorage.getItem("mila-cart")||"{}")}catch(e){}
+const save=()=>{try{localStorage.setItem("mila-cart",JSON.stringify(cart))}catch(e){}};
+
+async function load(){
+  try{products=await (await fetch("/api/products",{cache:"no-store"})).json()}catch(e){products=[]}
+  if(!Array.isArray(products))products=[];
+  cart=Object.fromEntries(Object.entries(cart).filter(([id])=>products.some(p=>p.id===id)));
+  drawCats();drawGrid();drawCart();
+}
+function drawCats(){
+  const cs=["Todos",...new Set(products.map(p=>p.category).filter(Boolean))];
+  $("#cats").innerHTML=products.length?cs.map(c=>`<button aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join(""):"";
+}
+function drawGrid(){
+  const list=products.filter(p=>cat==="Todos"||p.category===cat);
+  $("#grid").innerHTML=list.length?list.map(p=>`<article class="card">
+    <div class="ph">${p.img?`<img src="${p.img}" alt="${esc(p.name)}" loading="lazy">`:""}</div>
+    <div class="b"><small>${esc(p.category)}</small><h3>${esc(p.name)}</h3>
+    <p>${esc(p.desc)}</p>
+    ${p.tips?`<details><summary>Tips de uso</summary><p>${esc(p.tips)}</p></details>`:""}
+    <div class="price">${cop(p.price)}</div>
+    <button class="btn" data-add="${p.id}">Agregar al carrito</button></div></article>`).join(""):
+    `<div class="empty" style="grid-column:1/-1"><b>Estamos preparando el catálogo.</b><br>Escríbenos por WhatsApp y te contamos qué tenemos disponible.</div>`;
+}
+function drawCart(){
+  const ids=Object.keys(cart);let total=0,n=0,msg="Hola MILA. Quiero hacer este pedido:\n\n";
+  $("#items").innerHTML=ids.length?ids.map(id=>{
+    const p=products.find(x=>x.id===id),q=cart[id],s=p.price*q;total+=s;n+=q;
+    msg+=`• ${q} x ${p.name} — ${cop(s)}\n`;
+    return `<div class="it">${p.img?`<img src="${p.img}" alt="">`:"<i></i>"}<div><b>${esc(p.name)}</b><div class="qty"><button data-m="${id}" aria-label="Quitar uno">−</button>${q}<button data-p="${id}" aria-label="Agregar uno">+</button></div><button class="rm" data-r="${id}">Quitar</button></div><b>${cop(s)}</b></div>`}).join(""):
+    `<p style="padding:20px 0">Tu carrito está vacío. Agrega productos desde el catálogo.</p>`;
+  $("#cnt").textContent=n;$("#total").textContent=cop(total);
+  msg+=`\nTotal: ${cop(total)}\nQuedo atenta para coordinar el pago y la entrega. ¡Gracias!`;
+  const wa=$("#wa");wa.href=ids.length?`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`:"#";
+  wa.style.opacity=ids.length?1:.5;wa.style.pointerEvents=ids.length?"auto":"none";
+  save();
+}
+const toggle=o=>{$("#drawer").classList.toggle("open",o);$("#veil").classList.toggle("open",o)};
+document.addEventListener("click",e=>{
+  const t=e.target;
+  if(t.dataset.c){cat=t.dataset.c;drawCats();drawGrid()}
+  if(t.dataset.add){cart[t.dataset.add]=(cart[t.dataset.add]||0)+1;drawCart();toggle(true)}
+  if(t.dataset.p){cart[t.dataset.p]++;drawCart()}
+  if(t.dataset.m){if(--cart[t.dataset.m]<1)delete cart[t.dataset.m];drawCart()}
+  if(t.dataset.r){delete cart[t.dataset.r];drawCart()}
+});
+$("#open").onclick=()=>toggle(true);$("#close").onclick=$("#veil").onclick=()=>toggle(false);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")toggle(false)});
+load();
+</script>
+</body>
+</html>
