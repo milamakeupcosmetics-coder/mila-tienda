@@ -46,6 +46,7 @@ textarea{min-height:70px}
     <label for="pr">Precio (COP)</label><input id="pr" inputmode="numeric" placeholder="55.000">
     <label for="c">Categoría</label><input id="c" list="cl" placeholder="Labiales, Cuidado de la piel…"><datalist id="cl"></datalist>
     <label for="d">Descripción corta</label><textarea id="d"></textarea>
+    <label for="tn">Tonos o colores (opcional, sepáralos con coma)</label><input id="tn" placeholder="Tono 01 Marfil, Tono 02 Beige, Tono 03 Canela">
     <label for="t">Tips de uso o ingredientes (opcional)</label><textarea id="t"></textarea>
     <label for="f">Foto</label><input id="f" type="file" accept="image/*">
     <button class="btn" id="save">Guardar producto</button>
@@ -86,7 +87,7 @@ async function persist(ok){
   $("#msg").textContent=r.ok?ok:"No se pudo guardar. Intenta de nuevo.";
   return r.ok;
 }
-function reset(){editing=null;img="";["n","pr","c","d","t","f"].forEach(i=>$("#"+i).value="");$("#ftitle").textContent="Agregar producto"}
+function reset(){editing=null;img="";["n","pr","c","d","tn","t","f"].forEach(i=>$("#"+i).value="");$("#ftitle").textContent="Agregar producto"}
 $("#cancel").onclick=reset;
 $("#f").onchange=e=>{
   const file=e.target.files[0];if(!file)return;
@@ -100,7 +101,7 @@ $("#save").onclick=async()=>{
   const price=parseInt($("#pr").value.replace(/\./g,""),10);
   if(!$("#n").value.trim()||!price){$("#msg").textContent="Escribe el nombre y el precio.";return}
   const old=products.find(p=>p.id===editing);
-  const p={id:editing||Date.now().toString(36),name:$("#n").value.trim(),price,category:$("#c").value.trim()||"General",desc:$("#d").value.trim(),tips:$("#t").value.trim(),img:img||old?.img||""};
+  const p={id:editing||Date.now().toString(36),name:$("#n").value.trim(),price,category:$("#c").value.trim()||"General",desc:$("#d").value.trim(),tips:$("#t").value.trim(),tones:$("#tn").value.split(",").map(s=>s.trim()).filter(Boolean),img:img||old?.img||""};
   products=editing?products.map(x=>x.id===editing?p:x):[...products,p];
   if(await persist("Producto guardado.")){reset();draw()}
 };
@@ -108,7 +109,7 @@ $("#list").onclick=async e=>{
   const x=e.target.dataset.x,ed=e.target.dataset.e;
   if(x&&confirm("¿Eliminar este producto?")){products=products.filter(p=>p.id!==x);if(await persist("Producto eliminado."))draw()}
   if(ed){const p=products.find(p=>p.id===ed);editing=ed;img="";
-    $("#n").value=p.name;$("#pr").value=dots(String(p.price));$("#c").value=p.category;$("#d").value=p.desc;$("#t").value=p.tips||"";
+    $("#n").value=p.name;$("#pr").value=dots(String(p.price));$("#c").value=p.category;$("#d").value=p.desc;$("#t").value=p.tips||"";$("#tn").value=(p.tones||[]).join(", ");
     $("#ftitle").textContent="Editando: "+p.name;scrollTo({top:0,behavior:"smooth"})}
 };
 </script>

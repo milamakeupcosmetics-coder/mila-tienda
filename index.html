@@ -51,6 +51,7 @@ h2{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:800;letter-spacing:-.01em;marg
 .card small{opacity:.75}
 .card h3{font-size:1.05rem}
 .price{font-weight:800;font-size:1.2rem}
+.tone{padding:8px;border:1.5px solid var(--pink);border-radius:10px;font:inherit;color:var(--brown);background:#fff}
 details{font-size:.92rem}summary{cursor:pointer;font-weight:700}
 .card .btn{margin-top:auto;width:100%;text-align:center}
 .empty{padding:40px;text-align:center;background:var(--cream);border-radius:18px}
@@ -157,7 +158,7 @@ const save=()=>{try{localStorage.setItem("mila-cart",JSON.stringify(cart))}catch
 async function load(){
   try{products=await (await fetch("/api/products",{cache:"no-store"})).json()}catch(e){products=[]}
   if(!Array.isArray(products))products=[];
-  cart=Object.fromEntries(Object.entries(cart).filter(([id])=>products.some(p=>p.id===id)));
+  cart=Object.fromEntries(Object.entries(cart).filter(([k])=>products.some(p=>p.id===k.split("|")[0])));
   drawCats();drawGrid();drawCart();
 }
 function drawCats(){
@@ -171,6 +172,7 @@ function drawGrid(){
     <div class="b"><small>${esc(p.category)}</small><h3>${esc(p.name)}</h3>
     <p>${esc(p.desc)}</p>
     ${p.tips?`<details><summary>Tips de uso</summary><p>${esc(p.tips)}</p></details>`:""}
+    ${p.tones&&p.tones.length?`<select class="tone" aria-label="Elige tu tono">${p.tones.map(t=>`<option>${esc(t)}</option>`).join("")}</select>`:""}
     <div class="price">${cop(p.price)}</div>
     <button class="btn" data-add="${p.id}">Agregar al carrito</button></div></article>`).join(""):
     `<div class="empty" style="grid-column:1/-1"><b>Estamos preparando el catálogo.</b><br>Escríbenos por WhatsApp y te contamos qué tenemos disponible.</div>`;
@@ -178,9 +180,9 @@ function drawGrid(){
 function drawCart(){
   const ids=Object.keys(cart);let total=0,n=0,msg="Hola MILA. Quiero hacer este pedido:\n\n";
   $("#items").innerHTML=ids.length?ids.map(id=>{
-    const p=products.find(x=>x.id===id),q=cart[id],s=p.price*q;total+=s;n+=q;
-    msg+=`• ${q} x ${p.name} — ${cop(s)}\n`;
-    return `<div class="it">${p.img?`<img src="${p.img}" alt="">`:"<i></i>"}<div><b>${esc(p.name)}</b><div class="qty"><button data-m="${id}" aria-label="Quitar uno">−</button>${q}<button data-p="${id}" aria-label="Agregar uno">+</button></div><button class="rm" data-r="${id}">Quitar</button></div><b>${cop(s)}</b></div>`}).join(""):
+    const [pid,tn]=id.split("|"),p=products.find(x=>x.id===pid),q=cart[id],s=p.price*q;total+=s;n+=q;
+    msg+=`• ${q} x ${p.name}${tn?" (Tono: "+tn+")":""} — ${cop(s)}\n`;
+    return `<div class="it">${p.img?`<img src="${p.img}" alt="">`:"<i></i>"}<div><b>${esc(p.name)}</b>${tn?`<br><small>Tono: ${esc(tn)}</small>`:""}<div class="qty"><button data-m="${id}" aria-label="Quitar uno">−</button>${q}<button data-p="${id}" aria-label="Agregar uno">+</button></div><button class="rm" data-r="${id}">Quitar</button></div><b>${cop(s)}</b></div>`}).join(""):
     `<p style="padding:20px 0">Tu carrito está vacío. Agrega productos desde el catálogo.</p>`;
   $("#cnt").textContent=n;$("#total").textContent=cop(total);
   msg+=`\nTotal: ${cop(total)}\nQuedo atenta para coordinar el pago y la entrega. ¡Gracias!`;
@@ -192,7 +194,7 @@ const toggle=o=>{$("#drawer").classList.toggle("open",o);$("#veil").classList.to
 document.addEventListener("click",e=>{
   const t=e.target;
   if(t.dataset.c){cat=t.dataset.c;drawCats();drawGrid()}
-  if(t.dataset.add){cart[t.dataset.add]=(cart[t.dataset.add]||0)+1;drawCart();toggle(true)}
+  if(t.dataset.add){const sl=t.closest(".card").querySelector(".tone"),k=t.dataset.add+(sl?"|"+sl.value:"");cart[k]=(cart[k]||0)+1;drawCart();toggle(true)}
   if(t.dataset.p){cart[t.dataset.p]++;drawCart()}
   if(t.dataset.m){if(--cart[t.dataset.m]<1)delete cart[t.dataset.m];drawCart()}
   if(t.dataset.r){delete cart[t.dataset.r];drawCart()}
