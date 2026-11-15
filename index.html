@@ -51,6 +51,9 @@ h2{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:800;letter-spacing:-.01em;marg
 .card small{opacity:.75}
 .card h3{font-size:1.05rem}
 .price{font-weight:800;font-size:1.2rem}
+.th{display:flex;gap:6px;padding:8px 16px 0;overflow-x:auto}
+.th img{width:44px;height:44px;object-fit:cover;border-radius:8px;cursor:pointer;opacity:.7}
+.th img:hover{opacity:1}
 .tones{display:flex;flex-wrap:wrap;gap:6px}
 .tn{border:1.5px solid var(--pink);background:#fff;color:var(--brown);border-radius:99px;padding:5px 12px;font:inherit;font-size:.85rem;cursor:pointer}
 .tn:hover{background:var(--blush)}
@@ -169,10 +172,11 @@ function drawCats(){
   const cs=["Todos",...new Set(products.map(p=>p.category).filter(Boolean))];
   $("#cats").innerHTML=products.length?cs.map(c=>`<button aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join(""):"";
 }
+const gal=p=>{const a=p.imgs&&p.imgs.length?p.imgs:(p.img?[p.img]:[]);return `<div class="ph">${a[0]?`<img class="main" src="${a[0]}" alt="${esc(p.name)}" loading="lazy">`:""}</div>${a.length>1?`<div class="th">${a.map((u,i)=>`<img src="${u}" alt="Foto ${i+1} de ${esc(p.name)}" data-th="${i}" loading="lazy">`).join("")}</div>`:""}`};
 function drawGrid(){
   const list=products.filter(p=>cat==="Todos"||p.category===cat);
   $("#grid").innerHTML=list.length?list.map(p=>`<article class="card">
-    <div class="ph">${p.img?`<img src="${p.img}" alt="${esc(p.name)}" loading="lazy">`:""}</div>
+    ${gal(p)}
     <div class="b"><small>${esc(p.category)}</small><h3>${esc(p.name)}</h3>
     <p>${esc(p.desc)}</p>
     ${p.tips?`<details><summary>Tips de uso</summary><p>${esc(p.tips)}</p></details>`:""}
@@ -198,6 +202,7 @@ const toggle=o=>{$("#drawer").classList.toggle("open",o);$("#veil").classList.to
 document.addEventListener("click",e=>{
   const t=e.target;
   if(t.dataset.c){cat=t.dataset.c;drawCats();drawGrid()}
+  if(t.dataset.th!==undefined){t.closest(".card").querySelector(".main").src=t.src}
   if(t.dataset.t!==undefined){const cd=t.closest(".card");cd.querySelectorAll(".tn").forEach(b=>b.setAttribute("aria-pressed",b===t));cd.querySelector(".warn").style.display="none"}
   if(t.dataset.add){const cd=t.closest(".card"),has=cd.querySelector(".tn"),sl=cd.querySelector(".tn[aria-pressed=true]");
     if(has&&!sl){cd.querySelector(".warn").style.display="block";return}

@@ -48,7 +48,7 @@ textarea{min-height:70px}
     <label for="d">Descripción corta</label><textarea id="d"></textarea>
     <label for="tn">Tonos o colores (opcional, sepáralos con coma)</label><input id="tn" placeholder="Tono 01 Marfil, Tono 02 Beige, Tono 03 Canela">
     <label for="t">Tips de uso o ingredientes (opcional)</label><textarea id="t"></textarea>
-    <label for="f">Foto</label><input id="f" type="file" accept="image/*">
+    <label for="f">Fotos (puedes elegir varias, máximo 4)</label><input id="f" type="file" accept="image/*" multiple><div id="prev"></div>
     <button class="btn" id="save">Guardar producto</button>
     <button class="btn s" id="cancel" style="margin-top:16px">Cancelar edición</button>
     <div id="msg"></div>
@@ -63,7 +63,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dots=v=>v.replace(/\D/g,"").replace(/^0+(?=\d)/,"").replace(/\B(?=(\d{3})+(?!\d))/g,".");
 const cop=n=>"$ "+dots(String(n));
-let auth=null,products=[],editing=null,img="";
+let auth=null,products=[],editing=null,imgs=[];
 
 $("#pr").oninput=e=>e.target.value=dots(e.target.value);
 
@@ -87,28 +87,29 @@ async function persist(ok){
   $("#msg").textContent=r.ok?ok:"No se pudo guardar. Intenta de nuevo.";
   return r.ok;
 }
-function reset(){editing=null;img="";["n","pr","c","d","tn","t","f"].forEach(i=>$("#"+i).value="");$("#ftitle").textContent="Agregar producto"}
+function reset(){editing=null;imgs=[];prev();["n","pr","c","d","tn","t","f"].forEach(i=>$("#"+i).value="");$("#ftitle").textContent="Agregar producto"}
 $("#cancel").onclick=reset;
-$("#f").onchange=e=>{
-  const file=e.target.files[0];if(!file)return;
-  const im=new Image();im.onload=()=>{
-    const s=Math.min(1,700/Math.max(im.width,im.height)),cv=document.createElement("canvas");
-    cv.width=im.width*s;cv.height=im.height*s;cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
-    img=cv.toDataURL("image/jpeg",.8)};
-  im.src=URL.createObjectURL(file);
+$("#f").onchange=async e=>{
+  for(const file of [...e.target.files]){
+    if(imgs.length>=4)break;
+    imgs.push(await new Promise(ok=>{const im=new Image();im.onload=()=>{const s=Math.min(1,600/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=im.width*s;cv.height=im.height*s;cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);ok(cv.toDataURL("image/jpeg",.7))};im.src=URL.createObjectURL(file)}));
+  }
+  e.target.value="";prev();
 };
+function prev(){$("#prev").innerHTML=imgs.map((u,i)=>`<span style="position:relative;display:inline-block;margin:8px 8px 0 0"><img src="${u}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px"><button class="btn s" data-q="${i}" aria-label="Quitar foto" style="position:absolute;right:-6px;top:-6px;padding:0 7px;margin:0">×</button></span>`).join("")}
+$("#prev").onclick=e=>{if(e.target.dataset.q!==undefined){imgs.splice(+e.target.dataset.q,1);prev()}};
 $("#save").onclick=async()=>{
   const price=parseInt($("#pr").value.replace(/\./g,""),10);
   if(!$("#n").value.trim()||!price){$("#msg").textContent="Escribe el nombre y el precio.";return}
   const old=products.find(p=>p.id===editing);
-  const p={id:editing||Date.now().toString(36),name:$("#n").value.trim(),price,category:$("#c").value.trim()||"General",desc:$("#d").value.trim(),tips:$("#t").value.trim(),tones:$("#tn").value.split(",").map(s=>s.trim()).filter(Boolean),img:img||old?.img||""};
+  const p={id:editing||Date.now().toString(36),name:$("#n").value.trim(),price,category:$("#c").value.trim()||"General",desc:$("#d").value.trim(),tips:$("#t").value.trim(),tones:$("#tn").value.split(",").map(s=>s.trim()).filter(Boolean),img:imgs[0]||"",imgs};
   products=editing?products.map(x=>x.id===editing?p:x):[...products,p];
   if(await persist("Producto guardado.")){reset();draw()}
 };
 $("#list").onclick=async e=>{
   const x=e.target.dataset.x,ed=e.target.dataset.e;
   if(x&&confirm("¿Eliminar este producto?")){products=products.filter(p=>p.id!==x);if(await persist("Producto eliminado."))draw()}
-  if(ed){const p=products.find(p=>p.id===ed);editing=ed;img="";
+  if(ed){const p=products.find(p=>p.id===ed);editing=ed;imgs=[...(p.imgs||(p.img?[p.img]:[]))];prev();
     $("#n").value=p.name;$("#pr").value=dots(String(p.price));$("#c").value=p.category;$("#d").value=p.desc;$("#t").value=p.tips||"";$("#tn").value=(p.tones||[]).join(", ");
     $("#ftitle").textContent="Editando: "+p.name;scrollTo({top:0,behavior:"smooth"})}
 };
